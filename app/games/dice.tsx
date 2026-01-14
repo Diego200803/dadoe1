@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { DiceFace } from '@/components/atoms/DiceFace';
+import { Dice3D } from '@/components/atoms/Dice3D';
 import { ShakeIndicator } from '@/components/molecules/ShakeIndicator';
 import { useShakeDetection } from '@/lib/hooks/useShakeDetection';
 import { rollDice } from '@/lib/core/logic/motion';
@@ -63,7 +63,7 @@ export default function DiceGame() {
           <ShakeIndicator />
 
           <View style={styles.diceContainer}>
-            <DiceFace value={diceValue} isRolling={isRolling} />
+            <Dice3D value={diceValue} isRolling={isRolling} />
           </View>
 
           {!isRolling && (

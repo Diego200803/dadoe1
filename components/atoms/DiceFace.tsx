@@ -14,8 +14,12 @@ type DiceFaceProps = {
   isRolling: boolean;
 };
 
-export const DiceFace: React.FC<DiceFaceProps> = ({ value, isRolling }) => {
-  // Patrones de puntos para cada cara
+/**
+ * Componente que renderiza una cara del dado con puntos
+ * Incluye animaciones cuando el dado está rodando
+ */
+const DiceFace: React.FC<DiceFaceProps> = ({ value, isRolling }) => {
+  // Configuración de puntos para cada cara del dado
   const dotPatterns: Record<number, number[][]> = {
     1: [[1, 1]],
     2: [[0, 0], [2, 2]],
@@ -27,7 +31,7 @@ export const DiceFace: React.FC<DiceFaceProps> = ({ value, isRolling }) => {
 
   const dots = dotPatterns[value] || [];
 
-  // Animación cuando está rodando
+  // Animación de rotación cuando el dado está rodando
   const animatedStyle = useAnimatedStyle(() => {
     if (isRolling) {
       return {
@@ -100,3 +104,6 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -14 }, { translateY: -14 }],
   },
 });
+
+// Export default (esto evita el error de import)
+export default DiceFace;
