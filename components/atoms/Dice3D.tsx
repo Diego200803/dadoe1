@@ -3,9 +3,11 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { GLView } from 'expo-gl';
-import { Renderer, loadAsync } from 'expo-three';
 import * as THREE from 'three';
 import { Asset } from 'expo-asset';
+import { Renderer } from 'expo-three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
 
 type Dice3DProps = {
   isRolling: boolean;
@@ -47,23 +49,29 @@ export const Dice3D: React.FC<Dice3DProps> = ({ isRolling, value }) => {
       await asset.downloadAsync();
 
       // Cargar el modelo usando expo-three
-      const model = await loadAsync(asset.uri);
-      
-      // Configurar el modelo
-      if (model.scene) {
-        const dice = model.scene;
-        
-        // Ajustar escala si es necesario
-        dice.scale.set(1, 1, 1);
-        
-        // Centrar el modelo
-        const box = new THREE.Box3().setFromObject(dice);
-        const center = box.getCenter(new THREE.Vector3());
-        dice.position.sub(center);
-        
-        diceRef.current = dice;
-        scene.add(dice);
-      }
+      const loader = new GLTFLoader();
+
+loader.load(
+  asset.uri,
+  (gltf) => {
+    const dice = gltf.scene;
+
+    // Escala
+    dice.scale.set(1, 1, 1);
+
+    // Centrar modelo
+    const box = new THREE.Box3().setFromObject(dice);
+    const center = box.getCenter(new THREE.Vector3());
+    dice.position.sub(center);
+
+    diceRef.current = dice;
+    scene.add(dice);
+  },
+  undefined,
+  (error) => {
+    console.error('Error cargando el GLB:', error);
+  }
+);
 
       // Luces
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
