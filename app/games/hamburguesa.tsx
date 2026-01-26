@@ -1,53 +1,125 @@
 // app/games/hamburguesa.tsx
 
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Hamburguesa3D } from '@/components/atoms/Hamburguesa3D';
 
+type Ingrediente = 'carne' | 'queso' | 'tomate' | 'lechuga';
+
+const INGREDIENTES_INFO: Record<Ingrediente, { emoji: string; label: string; color: string }> = {
+  carne: { emoji: 'Carne', label: 'Carne', color: '#8b4513' },
+  queso: { emoji: 'Queso', label: 'Queso', color: '#ffd700' },
+  tomate: { emoji: 'Tomate', label: 'Tomate', color: '#dc2626' },
+  lechuga: { emoji: 'Lechuga', label: 'Lechuga', color: '#10b981' },
+};
+
 export default function HamburguesaScreen() {
+  // Estado inicial: Triple carne con queso
+  const [ingredientes, setIngredientes] = useState<Ingrediente[]>([
+    'carne',
+    'queso',
+    'carne',
+    'queso',
+    'carne',
+    'queso',
+  ]);
+
+  const agregarIngrediente = (ingrediente: Ingrediente) => {
+    setIngredientes([...ingredientes, ingrediente]);
+  };
+
+  const quitarUltimo = () => {
+    if (ingredientes.length > 0) {
+      setIngredientes(ingredientes.slice(0, -1));
+    }
+  };
+
+  const reiniciar = () => {
+    setIngredientes(['carne', 'queso', 'carne', 'queso', 'carne', 'queso']);
+  };
+
+  const contarIngrediente = (tipo: Ingrediente) => {
+    return ingredientes.filter((ing) => ing === tipo).length;
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>🍔 Hamburguesa 3D</Text>
-            <Text style={styles.subtitle}>Modelo interactivo con 6 partes</Text>
+            <Text style={styles.title}>Arma tu Hamburguesa</Text>
+            <Text style={styles.subtitle}>Triple carne con queso personalizable</Text>
           </View>
 
           {/* Visor 3D */}
           <View style={styles.viewerContainer}>
-            <Hamburguesa3D />
+            <Hamburguesa3D ingredientes={ingredientes} />
           </View>
 
-          {/* Lista de partes */}
-          <View style={styles.partsContainer}>
-            <Text style={styles.partsTitle}>Componentes:</Text>
-            
-            <View style={styles.partsList}>
-              {[
-                '🍞 Pan Superior',
-                '🥬 Lechuga',
-                '🍅 Tomate',
-                '🧀 Queso',
-                '🥩 Carne',
-                '🍞 Pan Inferior',
-              ].map((part, index) => (
-                <View key={index} style={styles.partItem}>
-                  <Text style={styles.partText}>{part}</Text>
-                </View>
+          {/* Contador de ingredientes */}
+          <View style={styles.counterContainer}>
+            <Text style={styles.counterTitle}>Ingredientes actuales:</Text>
+            <View style={styles.counterGrid}>
+              {Object.entries(INGREDIENTES_INFO).map(([key, info]) => {
+                const count = contarIngrediente(key as Ingrediente);
+                return (
+                  <View key={key} style={styles.counterItem}>
+                    <Text style={styles.counterEmoji}>{info.emoji}</Text>
+                    <Text style={styles.counterNumber}>{count}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Botones de ingredientes */}
+          <View style={styles.buttonsContainer}>
+            <Text style={styles.buttonsTitle}>Agregar ingrediente:</Text>
+            <View style={styles.buttonsGrid}>
+              {Object.entries(INGREDIENTES_INFO).map(([key, info]) => (
+                <TouchableOpacity
+                  key={key}
+                  style={[styles.ingredientButton, { backgroundColor: info.color }]}
+                  onPress={() => agregarIngrediente(key as Ingrediente)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.ingredientEmoji}>{info.emoji}</Text>
+                  <Text style={styles.ingredientLabel}>{info.label}</Text>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
 
-          {/* Info adicional */}
+          {/* Botones de acción */}
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.removeButton]}
+              onPress={quitarUltimo}
+              disabled={ingredientes.length === 0}
+            >
+              <Text style={styles.actionButtonText}>Quitar último</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.resetButton]}
+              onPress={reiniciar}
+            >
+              <Text style={styles.actionButtonText}>Reiniciar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Info */}
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>
-              💡 La hamburguesa rota automáticamente para mostrar todos los ángulos
+              Toca un ingrediente para agregarlo a tu hamburguesa
+            </Text>
+            <Text style={styles.infoText}>
+              Total de capas: {ingredientes.length + 2} (incluye panes)
             </Text>
           </View>
         </View>
@@ -63,19 +135,20 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+    paddingBottom: 40,
   },
   container: {
     flex: 1,
     alignItems: 'center',
     padding: 20,
-    paddingVertical: 40,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
+    marginTop: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 8,
@@ -85,14 +158,14 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   viewerContainer: {
-    marginVertical: 30,
+    marginVertical: 20,
     alignItems: 'center',
   },
-  partsContainer: {
+  counterContainer: {
     width: '100%',
     maxWidth: 400,
-    marginTop: 30,
-    padding: 20,
+    marginTop: 20,
+    padding: 16,
     backgroundColor: '#ffffff',
     borderRadius: 16,
     shadowColor: '#000',
@@ -101,30 +174,99 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  partsTitle: {
-    fontSize: 18,
+  counterTitle: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#1f2937',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  partsList: {
+  counterGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  counterItem: {
+    alignItems: 'center',
+  },
+  counterEmoji: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  counterNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  buttonsContainer: {
+    width: '100%',
+    maxWidth: 400,
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  buttonsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 12,
+  },
+  buttonsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  ingredientButton: {
+    width: '48%',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  ingredientEmoji: {
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  ingredientLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  actionsContainer: {
+    width: '100%',
+    maxWidth: 400,
+    marginTop: 20,
+    flexDirection: 'row',
     gap: 12,
   },
-  partItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#f3f4f6',
+  actionButton: {
+    flex: 1,
+    paddingVertical: 14,
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#10b981',
+    alignItems: 'center',
   },
-  partText: {
-    fontSize: 16,
-    color: '#374151',
-    fontWeight: '500',
+  removeButton: {
+    backgroundColor: '#ef4444',
+  },
+  resetButton: {
+    backgroundColor: '#3b82f6',
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   infoBox: {
-    marginTop: 30,
+    marginTop: 20,
     padding: 16,
     backgroundColor: '#dbeafe',
     borderRadius: 12,
@@ -133,8 +275,9 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   infoText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#1e40af',
     lineHeight: 20,
+    marginBottom: 4,
   },
 });
